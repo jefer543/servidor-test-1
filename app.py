@@ -1,6 +1,14 @@
 from flask import Flask, jsonify, request
+from dbconfig import db
+from flask_migrate import Migrate
+from models.Mensagem import Mensagem
 
 app = Flask(__name__)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///meubancodedados.db'
+
+db.init_app(app)
+migrate = Migrate(app,db)
 
 mensagens = [{"mensagem": "primeira mensagem"}]
 
@@ -12,7 +20,9 @@ def home():
 
 @app.route('/mensagens')
 def ler_mensagens():
-    return jsonify(mensagens)
+    mensagens = Mensagem.query.all()
+    mensagens = [mensagem.to_dict() for mensagem in mensagens]
+    return jsonify(mensagens), 200
 
 
 @app.route('/mensagens/criar', methods=['POST'])
@@ -20,41 +30,40 @@ def criar_mensagem():
     dados = request.get_json()
     conteudo = dados['conteudo']
 
-    mensagens.append({"mensagem":conteudo})
+    novaMensagem = Mensagem(conteudo=conteudo)
 
-    return jsonify({"mensagem": "mensagem criada com sucesso"}), 201
+    db.session.add(novaMensagem)
+    db.session.commit()
+
+    return jsonify(novaMensagem.to_dict()), 201
 
 
 @app.route('/mensagens/editar/<id>', methods=['PUT'])
 def atualizar_mensagem(id):
     dados = request.get_json()
     conteudo = dados['conteudo']
-    indice = int(id)
+ 
+    mensagem = Mensagem.query.get_or_404(id)
 
-    if len(mensagens) < indice:
-        return jsonify({"erro": "Indice maior que lista de mensagens"}), 400
-    if mensagens[indice] is None:
-        return jsonify( {"erro": "Mensagem inexistente!"}), 400
+    mensagem.conteudo = conteudo
+    db.session.commit()
 
-    mensagens[indice] = {"conteudo": conteudo}
-    return jsonify({"mensagem": "Mensagem atualizar com sucesso"}), 200
+    return jsonify(mensagem.to_dict()), 200
 
 
 
 
 @app.route('/mensagens/exluir/<id>', methods=['DELETE'])
 def excluir_mensagem(id):
-    indice = int(id)
-
-    if indice > len(mensagens):
-        return jsonify({"erro": "Indice maior que tamanho da lista de mensagens"}), 400
-
-    if mensagens[indice] is None:
-        return jsonify( {"erro": "Mensagem inexistente!"}), 400
-    
-    del mensagens[indice]
-
+    mensagem = Mensagem.query.get_or_404(id)
+    db.session.delete(mensagem)
+    db.session.commit()
     return jsonify({"mensagem": "Mensagem excluida com sucesso!"}), 200
 
-    
-app.run(debug=True)
+
+with app.app_context():
+    from models.Mensagem import Mensagem
+    db.create_all()
+
+if __name__ == "__main__":
+    app.run(debug=True)
