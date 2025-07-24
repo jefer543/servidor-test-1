@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from models.Usuario import Usuario
 from dbconfig  import db
+from werkzeug.security import generate_password_hash, check_password_hash
+
 usuarios_bp = Blueprint('usuarios_bp', __name__, url_prefix='/usuarios')
 
 @usuarios_bp.route('/register', methods=['POST'])
@@ -10,11 +12,13 @@ def criar_usuario():
     email = dados['email']
     senha = dados['senha']
 
+    senhaCriptografada = generate_password_hash(senha)
+
     usuario_existente = Usuario.query.filter_by(email=email).first()
     if usuario_existente:
         return jsonify({"erro": "Email já cadastrado!"}), 400
     
-    novo_usuario = Usuario(nome=nome, email=email, senha=senha)
+    novo_usuario = Usuario(nome=nome, email=email, senha=senhaCriptografada)
 
     db.session.add(novo_usuario)
     db.session.commit()

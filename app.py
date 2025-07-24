@@ -7,6 +7,7 @@ from rotas.usuarios_rotas import usuarios_bp
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///meubancodedados.db'
+app.config('SECRET_KEY') = 'superchavesecreta'
 app.register_blueprint(mensagens_bp)
 app.register_blueprint(usuarios_bp)
 
