@@ -2,8 +2,27 @@ from flask import Blueprint, request, jsonify
 from models.Usuario import Usuario
 from dbconfig  import db
 from werkzeug.security import generate_password_hash, check_password_hash
+from generate_token import gerar_token
 
 usuarios_bp = Blueprint('usuarios_bp', __name__, url_prefix='/usuarios')
+
+@usuarios_bp.route('/login', methods=['post'])
+def login():
+    dados = request.get_json()
+    email = dados['email']
+    senha = dados['senha']
+
+    usuario = Usuario.query.filter_by(email=email).first()
+
+    if usuario is None:
+        return jsonify({"erro": "Email ou senha incorretos!"}), 400
+    
+    token = gerar_token(usuario.id)
+
+    if usuario is not None and check_password_hash(usuario.senha, senha):
+        return jsonify({"token":token}), 200
+
+    return jsonify({"erro": "Email ou senha incorretos!"}), 400
 
 @usuarios_bp.route('/register', methods=['POST'])
 def criar_usuario():
@@ -23,7 +42,9 @@ def criar_usuario():
     db.session.add(novo_usuario)
     db.session.commit()
 
-    return jsonify({"msg": "usuario criado!"}), 201
+    token = gerar_token(novo_usuario.id)
+
+    return jsonify({"token": token}), 201
 
 @usuarios_bp.route('/')
 def ler_usuarios():
