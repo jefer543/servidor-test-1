@@ -3,6 +3,7 @@ from models.Usuario import Usuario
 from dbconfig  import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from generate_token import gerar_token
+from token_decorator import requer_token
 
 usuarios_bp = Blueprint('usuarios_bp', __name__, url_prefix='/usuarios')
 
@@ -52,12 +53,19 @@ def ler_usuarios():
     usuarios = [usuario.to_dict() for usuario in usuarios]
     return jsonify(usuarios), 200
 
-@usuarios_bp.route('/editar/<int:id>', methods=['PUT'])
-def editar_usuario(id):
+
+@usuarios_bp.route('/editar/<int:id_usuario>', methods=['PUT'])
+@requer_token
+def editar_usuario(id_usuario):
     dados = request.get_json()
+    
+    print(id_usuario)
 
-    usuario = Usuario.query.get_or_404(id)
-
+    if id_usuario == request.id_usuario:
+        usuario = Usuario.query.get_or_404(id_usuario)
+    else:
+        return jsonify({"erro": "Operação inválida!"}), 401
+    
     if dados['nome']:
         usuario.nome = dados['nome']
 
@@ -74,9 +82,12 @@ def editar_usuario(id):
     return jsonify({"msg": "usuario atualizado com sucesso!"})
 
 @usuarios_bp.route('/excluir/<int:id>', methods=['DELETE']) # delete
+@requer_token
 def excluir_usuario(id):
-    usuario = Usuario.query.get_or_404(id)
-    db.session.delete(usuario)
-    db.session.commit()
+    if id == request.id_usuario:
+        usuario = Usuario.query.get_or_404(id)
+        db.session.delete(usuario)
+        db.session.commit()
+        return jsonify({"msg": "Usuário excluído com sucesso!"}), 200
 
-    return jsonify({"msg": "Usuário excluído com sucesso!"}), 200
+    return jsonify({"erro": "Você não tem permissão para excluir este usuário!"}), 403
