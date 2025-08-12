@@ -4,13 +4,14 @@ from dbconfig import db
 from flask_migrate import Migrate
 from rotas.mensagens_rotas import mensagens_bp
 from rotas.usuarios_rotas import usuarios_bp
-
+from rotas.comments import comments_bp
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///meubancodedados.db'
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.register_blueprint(mensagens_bp)
 app.register_blueprint(usuarios_bp)
+app.register_blueprint(comments_bp)
 
 db.init_app(app)
 migrate = Migrate(app,db)
