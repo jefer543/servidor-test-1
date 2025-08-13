@@ -1,4 +1,4 @@
-from dbconfig import db
+from ..dbconfig import db
 
 class Usuario(db.Model):
     __tablename__ = 'usuarios'

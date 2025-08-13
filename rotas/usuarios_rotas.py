@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
-from models.Usuario import Usuario
-from dbconfig  import db
+from ..models.Usuario import Usuario
+from ..dbconfig  import db
 from werkzeug.security import generate_password_hash, check_password_hash
-from generate_token import gerar_token
-from token_decorator import requer_token
+from ..generate_token import gerar_token
+from ..token_decorator import requer_token
 
 usuarios_bp = Blueprint('usuarios_bp', __name__, url_prefix='/usuarios')
 

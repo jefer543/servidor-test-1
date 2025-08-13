@@ -1,10 +1,10 @@
 import os
 from flask import Flask, jsonify, request
-from dbconfig import db
+from .dbconfig import db
 from flask_migrate import Migrate
-from rotas.mensagens_rotas import mensagens_bp
-from rotas.usuarios_rotas import usuarios_bp
-from rotas.comments import comments_bp
+from .rotas.mensagens_rotas import mensagens_bp
+from .rotas.usuarios_rotas import usuarios_bp
+from .rotas.comments import comments_bp
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///meubancodedados.db'

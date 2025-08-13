@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
-from dbconfig import db
-from models.Mensagem import Mensagem
-from token_decorator import requer_token
+from ..dbconfig import db
+from ..models.Mensagem import Mensagem
+from ..token_decorator import requer_token
 
 mensagens_bp = Blueprint('mensagens_bp', __name__, url_prefix='/mensagens')
 

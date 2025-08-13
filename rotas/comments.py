@@ -1,5 +1,5 @@
 from flask import Blueprint, request
-from schemas.comment_schema import CommentSchema
+from ..schemas.comment_schema import CommentSchema
 from controllers import comment_controller
 from middlewares.message_required import mensagem_existe
 from middlewares.comment_required import comentario_existe
